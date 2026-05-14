@@ -1,24 +1,48 @@
-# codex-meter
+# ai-meter
 
-`codex-meter` 是一个本地 Codex 日志诊断工具。
+`ai-meter` 是一个本地 Codex 日志诊断与 AI 复盘工具。
 
-它不是单纯把日志导出来，而是帮你回答这些问题：
+它最重要的能力不是“看日志”，而是：
+
+> 选中某一次问答，让 AI 基于这次会话的 prompt、执行步骤、时间、Token、关键代码片段，复盘为什么慢、为什么贵，并直接重写出一个更优的提示词。
+
+也就是说，你不只会看到：
+
+- 这次用了多少 Token
+- 这次花了多久
+- 这次读了多少文件
+
+你还会直接得到：
+
+- 这次 prompt 具体哪里写得不好
+- 哪一句话让 AI 去全项目搜索
+- 哪些输入 Token 其实本可以避免
+- 如果重来一次，应该怎么写 prompt，才能明显减少时间消耗和 Token 消耗
+
+## 它能回答什么
 
 - 这次为什么慢？
-- 这次为什么 Token 用得高？
+- 这次为什么 Token 高？
 - AI 到底做了什么？
 - 时间花在了哪里？
 - Token 主要消耗在了哪里？
-- 是需求描述不清、上下文过大、工具调用太多，还是本地环境太慢？
+- 如果重来一次，这个问题应该怎么问？
 
-`codex-meter` 会读取你本机已有的 Codex 日志，整理成一个可直接打开的静态 HTML 站点，方便你按“每次提问”去复盘整个过程。
+## 最重要的功能：AI 复盘指定问答
 
-## 适合谁
+这是 `ai-meter` 当前最重要的功能。
 
-- 经常使用 Codex，希望知道为什么一次任务特别慢
-- 想分析为什么某次提问消耗了很多 Token
-- 想看清楚 AI 在一次问答里到底做了哪些事
-- 想优化自己的提问方式、项目结构或本地工具链
+你可以打开任意一次问答详情页，点击 `生成 AI 复盘建议`，然后让 AI 专门复盘这一轮问答。
+
+生成结果会直接告诉你：
+
+- 这次真正慢在哪里
+- 这次 Token 主要浪费在哪里
+- 原始 prompt 的具体问题
+- 推荐重写后的 prompt
+- 为什么这个新 prompt 会更省
+
+这比单纯看统计更重要，因为它会直接产出“下一次该怎么问”。
 
 ## 核心能力
 
@@ -27,12 +51,13 @@
 - 展示 AI 做了什么、每一步花了多久
 - 展示模型响应耗时和 Token 去向
 - 分析上下文膨胀、Prompt 问题、工具耗时、修复循环
-- 生成纯静态中文站点，无需服务端
-- 在问答详情页按需生成 AI 复盘建议，直接给出更省时省 Token 的重写提示词
+- 指定某一次问答，按需生成 AI 复盘建议
+- 直接给出更省时省 Token 的重写提示词
+- 生成纯静态中文站点
 
 ## 数据来源
 
-`codex-meter` 只读取本机数据，不请求云端日志接口。
+`ai-meter` 只读取本机数据，不请求云端日志接口。
 
 当前主要使用这些本地文件：
 
@@ -42,25 +67,25 @@
 
 ## 安装与运行
 
-如果你只是本地直接运行当前项目：
+如果你只是本地运行当前项目：
 
 ```bash
-node ./bin/codex-meter.js init
-node ./bin/codex-meter.js update
-node ./bin/codex-meter.js open
+npm run init
+npm run update
+npm run open
 ```
 
-如果你之后发布到 npm，也可以支持：
+如果之后发布到 npm，命令会是：
 
 ```bash
-npx @noahliao/codex-meter init
-npx @noahliao/codex-meter update
-npx @noahliao/codex-meter open
+npx ai-meter init
+npx ai-meter update
+npx ai-meter open
 ```
 
 ## 命令说明
 
-### `init`
+### `npm run init`
 
 首次初始化。
 
@@ -71,11 +96,7 @@ npx @noahliao/codex-meter open
 - 建立缓存
 - 生成第一版静态站点
 
-```bash
-node ./bin/codex-meter.js init
-```
-
-### `update`
+### `npm run update`
 
 增量更新。
 
@@ -86,52 +107,45 @@ node ./bin/codex-meter.js init
 - 重新计算诊断结果
 - 重建 HTML 页面
 
-```bash
-node ./bin/codex-meter.js update
-```
+### `npm run open`
 
-### `open`
+启动本地网页服务并打开站点首页。
 
-启动本地网页服务并打开站点首页：
-
-```bash
-node ./bin/codex-meter.js open
-```
-
-静态产物仍然生成在这个相对路径：
+静态产物仍然生成在：
 
 ```text
 .codex/codex-meter/site/index.html
 ```
 
-但为了让详情页里的“生成 AI 复盘建议”按钮能真正工作，`open` 会启动一个本地网页服务，再打开浏览器访问本地地址。
-现在默认会启动后台本地服务，所以终端可以直接结束；如果 AI 复盘按钮异常，可以查看：
+为了让详情页里的 `生成 AI 复盘建议` 按钮能工作，`open` 会同时启动本地服务。
+
+如果 AI 复盘按钮异常，可以查看：
 
 ```text
 .codex/codex-meter/logs/server.log
 ```
 
-## 生成结果
+## 最常见的使用方式
 
-运行后会在项目里生成：
+### 1）先生成或更新站点
 
-```text
-.codex/
-  codex-meter/
-    config.json
-    cache/
-    site/
-      index.html
-      conversations/
-      turns/
+```bash
+npm run update
 ```
 
-其中：
+### 2）打开站点
 
-- `cache/` 是本地缓存，用于加速后续更新
-- `site/` 是最终生成的静态站点
+```bash
+npm run open
+```
 
-## 站点里能看到什么
+### 3）进入某个具体问答详情页
+
+### 4）点击 `生成 AI 复盘建议`
+
+然后 `ai-meter` 会针对这一次问答，基于本地日志和相关代码片段，生成一份中文复盘。
+
+## 页面里能看到什么
 
 ### 首页
 
@@ -160,11 +174,11 @@ node ./bin/codex-meter.js open
 - 工具统计
 - 上下文膨胀证据
 - 原始时间线
-- AI 复盘建议：告诉你这次提示词为什么放大了时间 / Token 成本，以及应该怎么重写
+- AI 复盘建议
 
-## 目前的判断逻辑
+## 当前的判断方向
 
-当前会重点分析这些方向：
+当前会重点分析这些问题：
 
 - 需求描述是否过短
 - 是否指定了目标文件 / 页面 / 组件
@@ -180,7 +194,7 @@ node ./bin/codex-meter.js open
 
 ### 1. 这是本地诊断工具
 
-`codex-meter` 的目标是解释“为什么慢、为什么贵、为什么效率低”，不是做云端监控平台。
+`ai-meter` 的目标是解释“为什么慢、为什么贵、为什么效率低”，不是做云端监控平台。
 
 ### 2. 某些字段取决于本机日志是否存在
 
@@ -191,7 +205,7 @@ node ./bin/codex-meter.js open
 - 只记录到执行过程
 - 没记录到完整最终答复
 
-这不是 `codex-meter` 伪造数据，而是会尽量忠实展示本地能恢复出来的内容。
+这不是 `ai-meter` 伪造数据，而是尽量忠实展示本地能恢复出来的内容。
 
 ### 3. AI 复盘是按需生成的
 
@@ -209,26 +223,9 @@ node ./bin/codex-meter.js open
 
 但“某一次工具调用单独消耗了多少 Token”通常无法从本地日志精确恢复，所以页面会把它和模型响应级 Token 区分展示。
 
-## 当前定位
+## 一句话定位
 
-一句话：
-
-> Analyze why your Codex task is slow, expensive, or inefficient.
-
-## 开发状态
-
-当前是 v1 方向，重点先放在：
-
-- 本地日志扫描
-- 诊断分析
-- 静态 HTML 输出
-
-暂不包含：
-
-- GUI 应用
-- 云同步
-- 多用户
-- 在线仪表盘
+> Analyze why your Codex task is slow, expensive, or inefficient — and how to ask better next time.
 
 ## License
 

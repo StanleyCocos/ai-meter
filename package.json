@@ -1,0 +1,15 @@
+{
+  "name": "codex-meter",
+  "version": "1.0.0",
+  "description": "本地 Codex 日志诊断与静态历史站点生成工具。",
+  "type": "module",
+  "bin": {
+    "codex-meter": "./bin/codex-meter.js"
+  },
+  "scripts": {
+    "init": "node ./bin/codex-meter.js init",
+    "update": "node ./bin/codex-meter.js update",
+    "open": "node ./bin/codex-meter.js open"
+  },
+  "license": "MIT"
+}
